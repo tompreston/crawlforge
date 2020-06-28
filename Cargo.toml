@@ -1,0 +1,14 @@
+[package]
+name = "crawlforge"
+version = "0.1.0"
+authors = ["Thomas Preston <thomasmarkpreston@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.10", features = ["blocking"] }
+soup = "0.5.0"
+structopt = "0.3"
+thiserror = "1"
+url = "2.1.1"
