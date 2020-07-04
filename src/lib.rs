@@ -1,6 +1,5 @@
 use soup::{NodeExt, QueryBuilderExt, Soup};
 use std::str::FromStr;
-//use std::io;
 use structopt::StructOpt;
 use thiserror::Error;
 use url;
@@ -19,9 +18,6 @@ pub struct CrawlForgeOpt {
 /// The errors which can happen when crawling a git forge
 #[derive(Error, Debug)]
 pub enum CrawlForgeError {
-    ///// When an IO error occurrs
-    //#[error("IO error, {0}")]
-    //IO(io::Error),
     /// When a reqwest error occurrs
     #[error("Reqwest error, {0}")]
     Reqwest(reqwest::Error),
@@ -34,14 +30,14 @@ pub enum CrawlForgeError {
     #[error("Parse forge error, {0}")]
     ParseForgeError(String),
 
-    #[error("Listing not found")]
-    ListingNotFound(),
+    #[error("Listing not found for class {0}")]
+    ListingNotFound(String),
 
     #[error("Failed to get href from link element")]
     FailedToGetHref(String),
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum ForgeKind {
     Github,
 }
@@ -61,44 +57,61 @@ impl FromStr for ForgeKind {
 pub enum UrlKind {
     Directory,
     File,
+    RawFile,
+}
+
+fn forge_url_raw(forge: ForgeKind) -> &'static str {
+    match forge {
+        ForgeKind::Github => "https://raw.githubusercontent.com",
+    }
 }
 
 fn parse_github(url_kind: UrlKind, body: &str) -> Result<Vec<String>, CrawlForgeError> {
     let svg_class = match url_kind {
         UrlKind::Directory => "octicon-file-directory",
         UrlKind::File => "octicon-file",
+        UrlKind::RawFile => "octicon-file",
     };
-    let mut urls: Vec<String> = vec![];
 
-    let s = Soup::new(body);
-
-    // Find the repository-content div
-    let dcont = s
+    // Find the div repository-content, which contains the main repo links
+    let rcontent_class = "repository-content";
+    let rcontent = Soup::new(body)
         .tag("div")
-        .attr("class", "repository-content")
+        .attr("class", rcontent_class)
         .find()
-        .ok_or(CrawlForgeError::ListingNotFound())?;
+        .ok_or(CrawlForgeError::ListingNotFound(rcontent_class.to_string()))?;
 
-    // Within repository-content
-    // find js-navigation-item elements which contain svg elements with the
-    // given file or directory class
-    // Inside there, find js-navigation-open links
-    for child in dcont.children().filter(|child| child.is_element()) {
-        let dir_items = child
-            .tag("div")
-            .attr("class", "js-navigation-item")
-            .find_all()
-            .filter(|item| item.tag("svg").attr("class", svg_class).find().is_some());
-        for d in dir_items {
-            d.tag("a")
-                .attr("class", "js-navigation-open")
+    // Within repository-content, find js-navigation-item elements which contain
+    // svg elements with the class marking it as "file" or "directory".
+    let nav_items: Vec<_> = rcontent
+        .children()
+        .filter(|child| child.is_element())
+        .map(|child| {
+            child
+                .tag("div")
+                .attr("class", "js-navigation-item")
                 .find_all()
-                .for_each(|a| match a.get("href") {
-                    Some(href) => urls.push(href),
-                    None => urls.push("".to_string()),
-                })
-        }
-    }
+        })
+        .flatten()
+        .filter(|nav_item| {
+            nav_item
+                .tag("svg")
+                .attr("class", svg_class)
+                .find()
+                .is_some()
+        })
+        .collect();
+
+    // Extract the urls from the nav_items
+    let urls: Vec<String> = nav_items
+        .iter()
+        .filter_map(|n| n.tag("a").attr("class", "js-navigation-open").find())
+        .filter_map(|a| a.get("href"))
+        .map(|href| match url_kind {
+            UrlKind::RawFile => href.replace("blob/", ""),
+            _ => href,
+        })
+        .collect();
 
     Ok(urls)
 }
@@ -135,5 +148,15 @@ mod tests {
         assert_eq!(urls[2], "/tompreston/sup/blob/master/Cargo.lock");
         assert_eq!(urls[3], "/tompreston/sup/blob/master/Cargo.toml");
         assert_eq!(urls[4], "/tompreston/sup/blob/master/README.md");
+    }
+
+    #[test]
+    fn test_parse_raw_files_github() {
+        let urls = parse_github(UrlKind::RawFile, BODY_GITHUB).unwrap();
+        assert_eq!(urls[0], "/tompreston/sup/master/.gitignore");
+        assert_eq!(urls[1], "/tompreston/sup/master/.travis.yml");
+        assert_eq!(urls[2], "/tompreston/sup/master/Cargo.lock");
+        assert_eq!(urls[3], "/tompreston/sup/master/Cargo.toml");
+        assert_eq!(urls[4], "/tompreston/sup/master/README.md");
     }
 }
