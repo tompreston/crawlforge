@@ -60,12 +60,20 @@ pub enum UrlKind {
     RawFile,
 }
 
-fn forge_url_raw(forge: ForgeKind) -> &'static str {
+/// Returns the git forge's raw file URL
+///
+/// # Example
+/// ```
+/// # use crawlforge::{forge_url_raw, ForgeKind};
+/// assert_eq!(forge_url_raw(ForgeKind::Github), "https://raw.githubusercontent.com");
+/// ```
+pub fn forge_url_raw(forge: ForgeKind) -> &'static str {
     match forge {
         ForgeKind::Github => "https://raw.githubusercontent.com",
     }
 }
 
+/// Returns a list of Strings representing different UrlKinds
 fn parse_github(url_kind: UrlKind, body: &str) -> Result<Vec<String>, CrawlForgeError> {
     let svg_class = match url_kind {
         UrlKind::Directory => "octicon-file-directory",
