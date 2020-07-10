@@ -3,7 +3,6 @@ use std::path::Path;
 use std::str::FromStr;
 use structopt::StructOpt;
 use thiserror::Error;
-use url;
 
 #[derive(StructOpt, Debug)]
 #[structopt(about = "Crawl a git-forge")]
@@ -77,7 +76,7 @@ pub enum UrlKind {
 ///     "http://10.0.0.1:8080"
 /// );
 /// ```
-pub fn raw_file_base_url<'a>(forge: ForgeKind, url_base: &'a str) -> &'a str {
+pub fn raw_file_base_url(forge: ForgeKind, url_base: &str) -> &str {
     match forge {
         ForgeKind::GitHub => "https://raw.githubusercontent.com",
         ForgeKind::OpenGrok => url_base,
@@ -98,7 +97,7 @@ fn parse_github(url_kind: UrlKind, body: &str) -> Result<Vec<String>, CrawlForge
         .tag("div")
         .attr("class", rcontent_class)
         .find()
-        .ok_or(CrawlForgeError::ListingNotFound(rcontent_class.to_string()))?;
+        .ok_or_else(|| CrawlForgeError::ListingNotFound(rcontent_class.to_string()))?;
 
     // Within repository-content, find js-navigation-item elements which contain
     // svg elements with the class marking it as "file" or "directory".
@@ -151,7 +150,7 @@ fn parse_opengrok(
     let tbody = Soup::new(body)
         .tag(tbody_str)
         .find()
-        .ok_or(CrawlForgeError::ListingNotFound(tbody_str.to_string()))?;
+        .ok_or_else(|| CrawlForgeError::ListingNotFound(tbody_str.to_string()))?;
 
     // Now grab all the relative links in the second column.
     // Directories end with "/"
@@ -162,8 +161,8 @@ fn parse_opengrok(
         .filter_map(|a| a.get("href"))
         .filter(|href| href != "..")
         .filter(|href| match url_kind {
-            UrlKind::Directory => href.ends_with("/"),
-            _ => !href.ends_with("/"),
+            UrlKind::Directory => href.ends_with('/'),
+            _ => !href.ends_with('/'),
         })
         .map(|href| {
             Path::new(url_path_mod.as_str())

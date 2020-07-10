@@ -1,7 +1,6 @@
 use crawlforge::{
     parse_forge, raw_file_base_url, CrawlForgeError, CrawlForgeOpt, ForgeKind, UrlKind,
 };
-use reqwest;
 use structopt::StructOpt;
 use url::Url;
 
