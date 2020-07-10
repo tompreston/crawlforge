@@ -39,7 +39,7 @@ pub enum CrawlForgeError {
 
 #[derive(Copy, Clone, Debug)]
 pub enum ForgeKind {
-    Github,
+    GitHub,
 }
 
 impl FromStr for ForgeKind {
@@ -47,7 +47,7 @@ impl FromStr for ForgeKind {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s == "github" {
-            Ok(ForgeKind::Github)
+            Ok(ForgeKind::GitHub)
         } else {
             Err(CrawlForgeError::ParseForgeError(s.to_string()))
         }
@@ -65,11 +65,11 @@ pub enum UrlKind {
 /// # Example
 /// ```
 /// # use crawlforge::{forge_url_raw, ForgeKind};
-/// assert_eq!(forge_url_raw(ForgeKind::Github), "https://raw.githubusercontent.com");
+/// assert_eq!(forge_url_raw(ForgeKind::GitHub), "https://raw.githubusercontent.com");
 /// ```
 pub fn forge_url_raw(forge: ForgeKind) -> &'static str {
     match forge {
-        ForgeKind::Github => "https://raw.githubusercontent.com",
+        ForgeKind::GitHub => "https://raw.githubusercontent.com",
     }
 }
 
@@ -131,7 +131,7 @@ pub fn parse_forge<'a>(
     body: &'a str,
 ) -> Result<Vec<String>, CrawlForgeError> {
     match forge_kind {
-        ForgeKind::Github => parse_github(url_kind, body),
+        ForgeKind::GitHub => parse_github(url_kind, body),
     }
 }
 
