@@ -171,3 +171,49 @@ pub const BODY_GITHUB: &str = r#"
     </div>
 </div>
 </div>"#;
+
+pub const BODY_OPENGROK: &str = r#"
+<table id="dirlist" class="tablesorter tablesorter-default">
+<thead>
+<tr>
+<th class="sorter-false"></th>
+<th>Name</th>
+<th class="sorter-false"></th>
+<th class="sort-dates">Date</th>
+<th class="sort-groksizes">Size</th>
+<th>#Lines</th>
+<th>LOC</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><p class="'r'"/></td><td><b><a href="..">..</a></b></td><td></td><td>04-Jun-2020</td><td>-</td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-agl/"><b>meta-agl</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-agl" title="History">H</a></td><td>04-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-agl-demo/"><b>meta-agl-demo</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-agl-demo" title="History">H</a></td><td>04-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-agl-extra/"><b>meta-agl-extra</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-agl-extra" title="History">H</a></td><td>04-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-amb/"><b>meta-amb</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-amb" title="History">H</a></td><td>04-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-genivi-demo/"><b>meta-genivi-demo</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-genivi-demo" title="History">H</a></td><td>04-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-intel-iot-security/"><b>meta-intel-iot-security</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-intel-iot-security" title="History">H</a></td><td>08-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-ivi/"><b>meta-ivi</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-ivi" title="History">H</a></td><td>04-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-openembedded/"><b>meta-openembedded</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-openembedded" title="History">H</a></td><td>08-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-qt5/"><b>meta-qt5</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-qt5" title="History">H</a></td><td>08-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-rust/"><b>meta-rust</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-rust" title="History">H</a></td><td>08-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="meta-security-isafw/"><b>meta-security-isafw</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/meta-security-isafw" title="History">H</a></td><td>08-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="poky/"><b>poky</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/poky" title="History">H</a></td><td>08-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+<tr><td><p class="r"/></td><td><a href="foofile"><b>foofile</b></a>/</td><td class="q"><a href="/history/AGL/metalayers/poky" title="History">H</a></td><td>08-Jun-2020</td><td>-</td><td class="numlines"></td><td class="loc"></td></tr>
+</tbody>
+</table><div id="footer">
+<p><a href="http://opengrok.github.com/OpenGrok/"
+ title="Served by OpenGrok (1.3.3 - 658703f)"><span id="fti"></span></a></p>
+<p>Last Index update Fri Jul 10 05:45:39 KST 2020</p>
+</div></div>
+</div>
+	<script type="text/javascript" src="/js/jquery-3.4.1.min.js" data-priority="10"></script>
+	<script type="text/javascript" src="/js/jquery-ui-1.12.1-custom.min.js" data-priority="11"></script>
+	<script type="text/javascript" src="/js/jquery-tablesorter-2.26.6.min.js" data-priority="12"></script>
+	<script type="text/javascript" src="/js/tablesorter-parsers-0.0.2.min.js" data-priority="13"></script>
+	<script type="text/javascript" src="/js/searchable-option-list-2.0.7.min.js" data-priority="14"></script>
+	<script type="text/javascript" src="/js/utils-0.0.32.min.js" data-priority="15"></script>
+	<script type="text/javascript" src="/js/jquery.caret-1.5.2.min.js" data-priority="25"></script>
+</body>
+</html>
+"#;

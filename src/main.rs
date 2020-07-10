@@ -1,4 +1,6 @@
-use crawlforge::{forge_url_raw, parse_forge, CrawlForgeError, CrawlForgeOpt, ForgeKind, UrlKind};
+use crawlforge::{
+    parse_forge, raw_file_base_url, CrawlForgeError, CrawlForgeOpt, ForgeKind, UrlKind,
+};
 use reqwest;
 use structopt::StructOpt;
 use url::Url;
@@ -11,14 +13,15 @@ fn crawl_forge_dir(forge: ForgeKind, url: &str) -> Result<(), CrawlForgeError> {
         .map_err(CrawlForgeError::Reqwest)?;
 
     // Print the files
-    let url_raw = Url::parse(forge_url_raw(forge)).map_err(CrawlForgeError::UrlParse)?;
-    parse_forge(forge, UrlKind::RawFile, body.as_str())?
+    let url_base_raw = raw_file_base_url(forge, url);
+    let url_raw = Url::parse(url_base_raw).map_err(CrawlForgeError::UrlParse)?;
+    parse_forge(forge, UrlKind::RawFile, url, body.as_str())?
         .iter()
-        .filter_map(|raw_file_url| url_raw.join(raw_file_url).ok())
+        .filter_map(|raw_file_base_url| url_raw.join(raw_file_base_url).ok())
         .for_each(|url| println!("{}", url));
 
     // Recurse into dirs
-    let dir_urls: Vec<_> = parse_forge(forge, UrlKind::Directory, body.as_str())?
+    let dir_urls: Vec<_> = parse_forge(forge, UrlKind::Directory, url, body.as_str())?
         .iter()
         .filter_map(|dir_url| url_base.join(dir_url).ok())
         .collect();
