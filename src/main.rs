@@ -10,14 +10,14 @@ fn crawl_forge_dir(forge: ForgeKind, root: url::Url) -> Result<(), CrawlForgeErr
         .map_err(CrawlForgeError::Reqwest)?;
 
     // Print the files
-    let base_url_raw = crate::forge_base_url_raw(forge, &root)?;
-    parse_forge(forge, UrlKind::RawFile, body.as_str())?
+    let base_url_raw = forge_base_url_raw(forge, &root)?;
+    parse_forge(forge, UrlKind::RawFile, &root, body.as_str())?
         .iter()
         .filter_map(|raw_file_url| base_url_raw.join(raw_file_url).ok())
         .for_each(|url| println!("{}", url));
 
     // Recurse into dirs
-    let dir_urls: Vec<_> = parse_forge(forge, UrlKind::Directory, body.as_str())?
+    let dir_urls: Vec<_> = parse_forge(forge, UrlKind::Directory, &root, body.as_str())?
         .iter()
         .filter_map(|dir_url| root.join(dir_url).ok())
         .collect();
