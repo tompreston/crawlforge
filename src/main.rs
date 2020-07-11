@@ -5,7 +5,7 @@ use structopt::StructOpt;
 use url::Url;
 
 fn crawl_forge_dir(forge: ForgeKind, url: &str) -> Result<(), CrawlForgeError> {
-    let url_base = Url::parse(url).map_err(CrawlForgeError::UrlParse)?;
+    let url_base = Url::parse(url).map_err(|e| CrawlForgeError::UrlParse(e, url.to_string()))?;
     let body = reqwest::blocking::get(url_base.clone())
         .map_err(CrawlForgeError::Reqwest)?
         .text()
@@ -13,7 +13,8 @@ fn crawl_forge_dir(forge: ForgeKind, url: &str) -> Result<(), CrawlForgeError> {
 
     // Print the files
     let url_base_raw = raw_file_base_url(forge, url);
-    let url_raw = Url::parse(url_base_raw).map_err(CrawlForgeError::UrlParse)?;
+    let url_raw = Url::parse(url_base_raw)
+        .map_err(|e| CrawlForgeError::UrlParse(e, url_base_raw.to_string()))?;
     parse_forge(forge, UrlKind::RawFile, url, body.as_str())?
         .iter()
         .filter_map(|raw_file_base_url| url_raw.join(raw_file_base_url).ok())

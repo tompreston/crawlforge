@@ -23,8 +23,8 @@ pub enum CrawlForgeError {
     Reqwest(reqwest::Error),
 
     /// When a URL ParseError occurs
-    #[error("URL ParseError, {0}")]
-    UrlParse(url::ParseError),
+    #[error("URL ParseError, {0}, {1}")]
+    UrlParse(url::ParseError, String),
 
     /// Unknown forge
     #[error("Parse forge error, {0}")]
