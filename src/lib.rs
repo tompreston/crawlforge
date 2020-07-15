@@ -3,6 +3,7 @@ use std::path::Path;
 use std::str::FromStr;
 use structopt::StructOpt;
 use thiserror::Error;
+use url::Url;
 
 #[derive(StructOpt, Debug)]
 #[structopt(about = "Crawl a git-forge")]
@@ -25,6 +26,10 @@ pub enum CrawlForgeError {
     /// When a URL ParseError occurs
     #[error("URL ParseError, {0}, {1}")]
     UrlParse(url::ParseError, String),
+
+    /// When a URL ParseError occurs
+    #[error("URL cannot be a base, {0}")]
+    UrlCannotBeABase(String),
 
     /// Unknown forge
     #[error("Parse forge error, {0}")]
@@ -61,6 +66,23 @@ pub enum UrlKind {
     RawFile,
 }
 
+/// Returns a base URL by striping path segments. Copied from the Rust cookbook
+/// https://rust-lang-nursery.github.io/rust-cookbook/web/url.html#create-a-base-url-by-removing-path-segments
+fn base_url(mut url: Url) -> Result<Url, CrawlForgeError> {
+    match url.path_segments_mut() {
+        Ok(mut path) => {
+            path.clear();
+        }
+        Err(_) => {
+            return Err(CrawlForgeError::UrlCannotBeABase(url.into_string()));
+        }
+    }
+
+    url.set_query(None);
+
+    Ok(url)
+}
+
 /// Returns the git forge's raw file URL. This could just be the normal URL, a
 /// modification of it, or a completely new one.
 ///
@@ -68,19 +90,24 @@ pub enum UrlKind {
 /// ```
 /// # use crawlforge::{raw_file_base_url, ForgeKind};
 /// assert_eq!(
-///     raw_file_base_url(ForgeKind::GitHub, "https://github.com"),
-///     "https://raw.githubusercontent.com"
+///     raw_file_base_url(ForgeKind::GitHub, "https://github.com/foo/bar").ok(),
+///     Some("https://raw.githubusercontent.com".to_string())
 /// );
 /// assert_eq!(
-///     raw_file_base_url(ForgeKind::OpenGrok, "http://10.0.0.1:8080"),
-///     "http://10.0.0.1:8080"
+///     raw_file_base_url(ForgeKind::OpenGrok, "https://10.0.0.1:8080/xref/foo/bar").ok(),
+///     Some("https://10.0.0.1:8080".to_string())
 /// );
 /// ```
-pub fn raw_file_base_url(forge: ForgeKind, url_base: &str) -> &str {
-    match forge {
-        ForgeKind::GitHub => "https://raw.githubusercontent.com",
-        ForgeKind::OpenGrok => url_base,
-    }
+pub fn raw_file_base_url(forge: ForgeKind, url: &str) -> Result<String, CrawlForgeError> {
+    let mut u = match forge {
+        ForgeKind::GitHub => {
+            Url::parse("https://raw.githubusercontent.com").expect("static URL to be valid")
+        }
+        ForgeKind::OpenGrok => {
+            Url::parse(url).map_err(|e| CrawlForgeError::UrlParse(e, url.to_string()))?
+        }
+    };
+    Ok(base_url(&u)?.into_string())
 }
 
 /// Returns a list of Strings representing different UrlKinds
@@ -193,6 +220,7 @@ mod tests {
     use super::*;
     mod data;
     use data::{BODY_GITHUB, BODY_OPENGROK};
+    use url::Url;
 
     #[test]
     fn test_parse_dirs_github() {
@@ -243,5 +271,12 @@ mod tests {
     fn test_parse_files_opengrok() {
         let urls = parse_opengrok(UrlKind::File, "/xref/AGL/metalayers/", BODY_OPENGROK).unwrap();
         assert_eq!(urls[0], "/xref/AGL/metalayers/foofile");
+    }
+    #[test]
+    fn test_url_parse() {
+        assert!(
+            Url::parse("http://10.158.11.133:8125/xref/meb_icas3_release/CPU/AGL/metalayers")
+                .is_ok()
+        )
     }
 }

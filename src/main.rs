@@ -12,8 +12,8 @@ fn crawl_forge_dir(forge: ForgeKind, url: &str) -> Result<(), CrawlForgeError> {
         .map_err(CrawlForgeError::Reqwest)?;
 
     // Print the files
-    let url_base_raw = raw_file_base_url(forge, url);
-    let url_raw = Url::parse(url_base_raw)
+    let url_base_raw = raw_file_base_url(forge, url)?;
+    let url_raw = Url::parse(url_base_raw.as_str())
         .map_err(|e| CrawlForgeError::UrlParse(e, url_base_raw.to_string()))?;
     parse_forge(forge, UrlKind::RawFile, url, body.as_str())?
         .iter()
