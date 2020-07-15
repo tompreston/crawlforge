@@ -2,13 +2,12 @@ use soup::{NodeExt, QueryBuilderExt, Soup};
 use std::str::FromStr;
 use structopt::StructOpt;
 use thiserror::Error;
-use url;
 
 #[derive(StructOpt, Debug)]
 #[structopt(about = "Crawl a git-forge")]
 pub struct CrawlForgeOpt {
     /// URL of the forge to crawl
-    pub url: String,
+    pub url: url::Url,
 
     /// Type of git forge
     #[structopt(short, long, env, default_value = "github")]
@@ -60,17 +59,22 @@ pub enum UrlKind {
     RawFile,
 }
 
-/// Returns the git forge's raw file URL
+/// Returns the git forge's base URL for raw files
 ///
 /// # Example
 /// ```
-/// # use crawlforge::{forge_url_raw, ForgeKind};
-/// assert_eq!(forge_url_raw(ForgeKind::GitHub), "https://raw.githubusercontent.com");
+/// # use crawlforge::{forge_base_url_raw, ForgeKind};
+/// # use url::Url;
+/// let url_path = Url::parse("https://github.com/tompreston/sup/blob/master/README.md").unwrap();
+/// let base_url_raw = Url::parse("https://raw.githubusercontent.com").unwrap();
+/// assert_eq!(forge_base_url_raw(ForgeKind::GitHub, &url_path).ok(), Some(base_url_raw));
 /// ```
-pub fn forge_url_raw(forge: ForgeKind) -> &'static str {
-    match forge {
-        ForgeKind::GitHub => "https://raw.githubusercontent.com",
-    }
+pub fn forge_base_url_raw(forge: ForgeKind, _u: &url::Url) -> Result<url::Url, CrawlForgeError> {
+    let base_url_raw = match forge {
+        ForgeKind::GitHub => url::Url::parse("https://raw.githubusercontent.com")
+            .map_err(CrawlForgeError::UrlParse)?,
+    };
+    Ok(base_url_raw)
 }
 
 /// Returns a list of Strings representing different UrlKinds
@@ -87,7 +91,7 @@ fn parse_github(url_kind: UrlKind, body: &str) -> Result<Vec<String>, CrawlForge
         .tag("div")
         .attr("class", rcontent_class)
         .find()
-        .ok_or(CrawlForgeError::ListingNotFound(rcontent_class.to_string()))?;
+        .ok_or_else(|| CrawlForgeError::ListingNotFound(rcontent_class.to_string()))?;
 
     // Within repository-content, find js-navigation-item elements which contain
     // svg elements with the class marking it as "file" or "directory".
@@ -125,10 +129,10 @@ fn parse_github(url_kind: UrlKind, body: &str) -> Result<Vec<String>, CrawlForge
 }
 
 /// Returns a list of directory links
-pub fn parse_forge<'a>(
+pub fn parse_forge(
     forge_kind: ForgeKind,
     url_kind: UrlKind,
-    body: &'a str,
+    body: &str,
 ) -> Result<Vec<String>, CrawlForgeError> {
     match forge_kind {
         ForgeKind::GitHub => parse_github(url_kind, body),
