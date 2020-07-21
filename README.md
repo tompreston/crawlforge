@@ -9,8 +9,8 @@ resorting to using this tool.
 Don't bother implementing paralleisation with threads because we can just start
 a new crawlforge process for each subdirectory.
 
-    cargo run -- https://github.com/tompreston/sup/ > index.txt
-    cargo run -- -f opengrok http://username:password@opengrok.com/whatever/ > index.txt
+    cargo run -- https://github.com/tompreston/sup/ | tee index.txt
+    cargo run -- -f opengrok http://username:password@opengrok.com/whatever/ | tee index.txt
 
     # if necessary, combine several indexes which have been created in parallel
     sort index1.txt index2.txt > index.txt
