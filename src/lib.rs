@@ -271,4 +271,22 @@ mod tests {
         let urls = parse_opengrok(UrlKind::RawFile, &root, BODY_OPENGROK).unwrap();
         assert_eq!(urls[0], "/raw/AGL/metalayers/foofile");
     }
+
+    #[test]
+    fn test_url_username_password() {
+        let u =
+            url::Url::parse("http://foo1.bar:testpass@10.0.0.1:8080/xref/AGL/metalayers/").unwrap();
+        assert_eq!(u.username(), "foo1.bar");
+        assert_eq!(u.password(), Some("testpass"));
+    }
+
+    // Remember, '@' is %40 and '#' is %23 in URLs
+    #[test]
+    fn test_url_username_password_encoded() {
+        let u =
+            url::Url::parse("http://foo1.bar:test%40%23pass@10.0.0.1:8080/xref/AGL/metalayers/")
+                .unwrap();
+        assert_eq!(u.username(), "foo1.bar");
+        assert_eq!(u.password(), Some("test%40%23pass"));
+    }
 }
