@@ -9,7 +9,7 @@ fn crawl_forge_dir(forge: ForgeKind, root: url::Url) -> Result<(), CrawlForgeErr
         .text()
         .map_err(CrawlForgeError::Reqwest)?;
 
-    // Print the files
+    // Print the raw files
     let base_url_raw = forge_base_url_raw(forge, &root)?;
     parse_forge(forge, UrlKind::RawFile, &root, body.as_str())?
         .iter()
